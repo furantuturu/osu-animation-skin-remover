@@ -1,0 +1,19 @@
+{
+  "name": "osu-std-skin-animation-remover",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "furantuturu",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "electron": "^33.2.0"
+  },
+  "dependencies": {
+    "fast-sort": "^3.4.1"
+  }
+}
