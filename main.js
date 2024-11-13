@@ -1,15 +1,16 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('node:path')
-const { getAllASIFiles, naturalSort } = require('./helpers')
+const { getAllASIFiles } = require('./helpers')
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 450,
+        width: 550,
         height: 650,
         show: false,
         fullscreenable: false,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
+            devTools: false
         }
     })
     
@@ -44,14 +45,21 @@ async function handleSelectSkinDir() {
 
 ipcMain.handle('selectSkinDir', handleSelectSkinDir)
 
-async function handleASIFiles(event, skinDirPath) {
-    const [
-        allASIFiles,
-        totalASIFiles,
-        errMsg
-    ] = await getAllASIFiles(skinDirPath)
-
-    return [ naturalSort(allASIFiles).asc(), totalASIFiles, errMsg ]
+async function handleSkinDirectoryPathError(event, skinDirPath) {
+    const { errMsg } = await getAllASIFiles(skinDirPath)
+    return errMsg
 }
 
-ipcMain.handle('startASIFileDeletion', handleASIFiles)
+ipcMain.handle('DirectoryPathError', handleSkinDirectoryPathError)
+
+async function handleASIFileDeletion(skinDirPath) {
+    const { 
+        hitStdASI,
+        playSkipASI,
+        scorebarColourASI,
+        menuBackASI,
+        followpointASI
+    } = await getAllASIFiles(skinDirPath)
+}
+
+ipcMain.handle('ASIFileDeletion', handleASIFileDeletion)
