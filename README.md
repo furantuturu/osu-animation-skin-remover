@@ -1,1 +1,1 @@
-# Osu! Animatin Skin Remover
+# Osu! Animation Skin Remover
