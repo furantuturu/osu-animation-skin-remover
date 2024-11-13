@@ -1,9 +1,9 @@
-const skinDirInput = document.querySelector('#dir-name-input')
-const skinDirSelectBtn = document.querySelector('#select-dir-btn')
-const startBtn = document.querySelector('#start-btn')
-const totalASIFilesEle = document.querySelector('#total-asi-files')
-const errorEle = document.querySelector('#error')
-const allASIFilesList = document.querySelector('#all-asi-files-list')
+const skinDirSelectCont = document.querySelector('.select-dir-cont')
+const skinDirInput = document.querySelector('.dir-name-input')
+const skinDirSelectBtn = document.querySelector('.select-dir-btn')
+const startBtn = document.querySelector('.start-btn')
+const errorEle = document.querySelector('.error')
+
 
 skinDirSelectBtn.addEventListener('click', async (evt) => {
     evt.preventDefault()
@@ -11,6 +11,12 @@ skinDirSelectBtn.addEventListener('click', async (evt) => {
 
     const skinDir = await window.myAPI.selectSkinDir()
     skinDirInput.value = skinDir == undefined ? "" : skinDir
+
+    const skinDirInputToURL = new URL(skinDirInput.value).href
+    skinDirSelectCont.style.backgroundImage = `url("${skinDirInputToURL}/menu-background.jpg")`
+    skinDirSelectCont.style.backgroundSize = "cover"
+    skinDirSelectCont.style.backgroundPosition = "center 30%"
+    skinDirSelectCont.style.backgroundRepeat = "no-repeat"
 })
 
 startBtn.addEventListener('click', async(evt) => {
@@ -21,16 +27,13 @@ startBtn.addEventListener('click', async(evt) => {
     startBtn.disabled = true
     errorEle.textContent = ''
 
-    const [allASIFiles, totalASIFiles, errMsg] = await window.myAPI.startASIFileDeletion(skinDirInput.value)
+    const errMsg = await window.myAPI.skinDirectoryPathError(skinDirInput.value)
 
-    if (errMsg) errorEle.textContent = errMsg
-
-    totalASIFilesEle.textContent = totalASIFiles
-
-    for (const ASIFile of allASIFiles) {
-        const li = document.createElement('li')
-        li.textContent = ASIFile
-        allASIFilesList.append(li)
+    if (errMsg) {
+        errorEle.textContent = errMsg
+        skinDirSelectBtn.disabled = false
+        startBtn.disabled = false
+        return
     }
 
     skinDirSelectBtn.disabled = false
