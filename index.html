@@ -2,18 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="wclassth=device-wclassth, initial-scale=1.0">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'"
+    />
+    <meta
+        http-equiv="X-Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'"
+    />
     <title>Osu! Animaton Skin Remover</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="./renderer.js" defer></script>
 </head>
 <body>
-    <input type="text" id="dir-name-input">
-    <button type="button" id="select-dir-btn">Select Osu Skin Folder</button>
+    <div class="select-dir-cont">
+        <h1 class="title">Osu Animation Skin Remover</h1>
+        <input type="text" class="dir-name-input">
+        <br />
+        <button type="button" class="select-dir-btn">Select Osu Skin Folder</button>
+    </div>
     <br />
-    <button type="button" id="start-btn">Start</button>
-    <br>
-    <p style="color: red" id="error"></p>
-    <p>There are total of <strong id="total-asi-files">0</strong> animation skin interface files</p>
-    <ul style="height: 300px; overflow-y: scroll;" id="all-asi-files-list"></ul>
+    <p class="error"></p>
+    <p>Files that were deleted:</p>
+    <ul class="all-asi-files-deleted-list"></ul>
+    <p>Files that were renamed:</p>
+    <ul class="all-asi-files-renamed-list"></ul>
+    <br />
+    <button type="button" class="start-btn">Start</button>
 </body>
 </html>
