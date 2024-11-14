@@ -12,24 +12,46 @@
         http-equiv="X-Content-Security-Policy"
         content="default-src 'self'; script-src 'self'"
     />
-    <title>Osu! Animaton Skin Remover</title>
+    <title>osu! Animaton Skin Remover</title>
     <link rel="stylesheet" href="styles.css">
     <script src="./renderer.js" defer></script>
 </head>
 <body>
     <div class="select-dir-cont">
-        <h1 class="title">Osu Animation Skin Remover</h1>
-        <input type="text" class="dir-name-input">
-        <br />
-        <button type="button" class="select-dir-btn">Select Osu Skin Folder</button>
+        <h1 class="title">osu! Animation Skin Remover</h1>
+        <input type="text" class="dir-name-input" placeholder="Select an osu! Skin folder">
+        <button type="button" class="select-dir-btn">
+            Select
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="folder">
+                <path 
+                fill="#ffffff"
+                d="M384 480l48 0c11.4 0 21.9-6 27.6-15.9l112-192c5.8-9.9 5.8-22.1 .1-32.1S555.5 224 544 224l-400 0c-11.4 0-21.9 6-27.6 15.9L48 357.1 48 96c0-8.8 7.2-16 16-16l117.5 0c4.2 0 8.3 1.7 11.3 4.7l26.5 26.5c21 21 49.5 32.8 79.2 32.8L416 144c8.8 0 16 7.2 16 16l0 32 48 0 0-32c0-35.3-28.7-64-64-64L298.5 96c-17 0-33.3-6.7-45.3-18.7L226.7 50.7c-12-12-28.3-18.7-45.3-18.7L64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l23.7 0L384 480z"/>
+            </svg>
+        </button>
     </div>
-    <br />
     <p class="error"></p>
-    <p>Files that were deleted:</p>
-    <ul class="all-asi-files-deleted-list"></ul>
-    <p>Files that were renamed:</p>
-    <ul class="all-asi-files-renamed-list"></ul>
-    <br />
-    <button type="button" class="start-btn">Start</button>
+    <div class="files-deleted-cont">
+        <p>Files that were deleted: <strong class="delete-count"></strong></p>
+        <ul class="all-asi-files-deleted-list"></ul>
+    </div>
+    <div class="files-renamed-cont">
+        <p>Files that were renamed: <strong class="rename-count"></strong>
+            <br>
+            <i>(e.g. hit0-22.png to hit0-0.png and/or hit0-22@2x.png to hit0-0@2x.png)</i>
+            <br>
+            <i>(e.g. play-skip-50.png to play-skip.png and/or play-skip-50@2x.png to play-skip@2x.png)</i>
+        </p>
+        <ul class="all-asi-files-renamed-list"></ul>
+    </div>
+    <div class="start-btn-cont">
+        <button type="button" class="start-btn">
+            Start
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="trash-can">
+                <path 
+                fill="#ffffff"
+                d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0L284.2 0c12.1 0 23.2 6.8 28.6 17.7L320 32l96 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 96C14.3 96 0 81.7 0 64S14.3 32 32 32l96 0 7.2-14.3zM32 128l384 0 0 320c0 35.3-28.7 64-64 64L96 512c-35.3 0-64-28.7-64-64l0-320zm96 64c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16z"/>
+            </svg>
+        </button>
+    </div>
 </body>
 </html>
