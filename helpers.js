@@ -1,4 +1,5 @@
 const fs = require('node:fs/promises')
+const path = require('node:path')
 const { createNewSortInstance } = require('fast-sort')
 
 /**
@@ -49,7 +50,6 @@ async function getAllASIFiles(skinDirPath) {
         const key = Object.keys(hitStdASI).find(hitStd => hitStd == file.split(/-\d+/)[0])
         if (key) {
             hitStdASI[key].push(file)
-            allASIFiles.push(file)
         }
         
     }
@@ -57,7 +57,6 @@ async function getAllASIFiles(skinDirPath) {
     const collectNonGroupedASIFiles = (file, pattern, collector) => {
         if (file.includes(pattern)) {
             collector.push(file)
-            allASIFiles.push(file)
         }
     }
 
@@ -97,14 +96,42 @@ async function getAllASIFiles(skinDirPath) {
     }
 }
 
-function handleHitStdASIDeletion(skinDirPath, hitStdASI) {
-    Object.keys(hitStdASI).forEach(async key => {
+async function handleHitStdASIDeletion(skinDirPath, hitStdASI) {
+    const deletedHitASIFiles = []
+    const renamedHitASIFiles = []
+
+    //* renaming of mid frame hitSI to hit-0 and/or hit-0@2x
+    const renameMidFrames = async (skinDirPath, midFrames) => {
+        for (const midFrame of midFrames) {
+            renamedHitASIFiles.push(midFrame)
+
+            const newDefaultHitName = midFrame.includes('@2x')
+                ? midFrame.replace(/(-\d+)/, '-0@2x')
+                : midFrame.replace(/(-\d+)/, '-0')
+            
+            await fs.rename(path.join(skinDirPath, midFrame), path.join(skinDirPath, newDefaultHitName))
+        }
+    }
+
+    //* deletion of osu! STD hit ASI
+    const deleteHitStdASIFiles = async (skinDirPath, sortedHitStdASI) => {
+        for (const hitASI of sortedHitStdASI) {
+            if (hitASI.includes(`-0`) || hitASI.includes(`-0@2x`)) continue
+
+            deletedHitASIFiles.push(hitASI)
+
+            await fs.rm(path.join(skinDirPath, hitASI), { force: true })
+        }
+    }
+
+    const hitStdASIKeys = Object.keys(hitStdASI)
+    for (const key of hitStdASIKeys) {
         //* not including hitStdASI that only have at max 4 hitSI
         //* possibly only having (e.g hit300-0.png, hit300-0@2x.png, hit300-1.png, hit300-1@2x.png)
-        if (hitStdASI[key].length <= 4) return
-
+        if (hitStdASI[key].length <= 4) continue
+    
         const sortedHitStdASI = naturalSort(hitStdASI[key]).asc()
-
+    
         //* returns the middle "hit" frame of the skin, 
         //* it could be hit - 22.png or hit - 23png for this example
         //* if hit-44.png is the last frame,
@@ -112,63 +139,76 @@ function handleHitStdASIDeletion(skinDirPath, hitStdASI) {
         //* a @2x upscale variant of hit - 22.png(e.g hit.22@2x.png) or not
         const indexOfHitASIMidFrame = Math.floor(sortedHitStdASI.length / 2)
         const hitASIMidFrame = sortedHitStdASI[indexOfHitASIMidFrame]
-
+    
         //* assigns the normal and @2x variant of the middle "hit" frame of the skin
         //* that matches the name of the hitSIMidFrame
         const midFrames = sortedHitStdASI.filter(hit => {
             return hit.includes(hitASIMidFrame.replace(/(.png)|(@2x.png)/i, ''))
         })
 
-        //* renaming of mid frame hitSI to hit-0 and hit-0@2x
-        for (const midFrame of midFrames) {
-            if (midFrame.includes("@2x")) {
-                fs.rename(path.join(skinDirPath, midFrame), path.join(skinDirPath, midFrame.replace(/(-\d+)/, '-0@2x')))
-                continue
-            }
+        await renameMidFrames(skinDirPath, midFrames)
+        await deleteHitStdASIFiles(skinDirPath, sortedHitStdASI)
+    }
 
-            fs.rename(path.join(skinDirPath, midFrame), path.join(skinDirPath, midFrame.replace(/(-\d+)/, '-0')))
-        }
-
-        //* deletion of osu! STD hit ASI
-        for (const hitASI of sortedHitStdASI) {
-            if (hitASI.includes(`-0`) || hitSI.includes(`-0@2x`)) continue
-
-            await fs.rm(path.join(skinDirPath, hitASI), { force: true })
-        }
-
-    })
+    return { deletedHitASIFiles, renamedHitASIFiles }
 }
 
-async function handleDeletion(skinDirPath, osuSI) {
-    if (osuSI.length <= 4) return
+async function handleNonGroupedASIDeletion(skinDirPath, nonGroupedASI) {
+    const deletedASIFiles = []
+    const renamedASIFiles = []
 
-    const sortedOsuSI = naturalSort(osuSI).asc()
-
-    //* checks if theres no default static normal and/or @2x upscale SI
-    //* if theres none then get mid frame of the certain SI
-    //* and make it as a default static SI
-    //* else proceed directly to deletion
-    if (sortedOsuSI.at(-2)?.match(/(-\d+)/) !== null || sortedOsuSI.at(-1)?.match(/(-\d+)/) !== null) {
-        const indexOfSIMidFrame = Math.floor(sortedOsuSI.length / 2)
-        const SIMidFrame = sortedOsuSI[indexOfSIMidFrame]
-    
-        const midFrames = sortedOsuSI.filter(hit => {
-            return hit.includes(SIMidFrame.replace(/(.png)|(@2x.png)/i, ''))
-        })
-    
+    //* renaming of mid frame
+    //* (e.g.play-skip-25 to play - skip.png and/or play - skip@2x.png
+    //* if total play-skip frames is 50 (play-skip-50) and no default play-skip.png which is being checked)
+    const renameMidFrames = async (skinDirPath, midFrames) => {
         for (const midFrame of midFrames) {
-            fs.rename(path.join(skinDirPath, midFrame), path.join(skinDirPath, midFrame.replace(/(-\d+)/, '')))
+            renamedASIFiles.push(midFrame)
+
+            const newDefaultName = midFrame.replace(/(-\d+)/, '')
+            
+            await fs.rename(path.join(skinDirPath, midFrame), path.join(skinDirPath, newDefaultName))
         }
     }
 
-    for (const sI of sortedOsuSI) {
-        if (!sI.match(/(-\d+)/)) continue
-        
-        await fs.rm(path.join(skinDirPath, sI), { force: true })
+    const deleteASIFiles = async (skinDirPath, sortedNonGroupedASI) => {
+        for (const asi of sortedNonGroupedASI) {
+            if (!asi.match(/(-\d+)/)) continue
+
+            deletedASIFiles.push(asi)
+            
+            await fs.rm(path.join(skinDirPath, asi), { force: true })
+        }
     }
 
+    for (const asi of nonGroupedASI) {
+        if (asi.length <= 4) continue
+        
+        const sortedNonGroupedASI = naturalSort(asi).asc()
+
+        //* checks if theres no default static normal and/or @2x upscale SI
+        //* (e.g play-skip.png or play-skip@2x.png)
+        //* if theres none then get mid frame of the certain SI
+        //* and make it as a default static SI
+        //* else proceed directly to deletion
+        if (sortedNonGroupedASI.at(-2)?.match(/(-\d+)/) !== null || sortedNonGroupedASI.at(-1)?.match(/(-\d+)/) ) {
+            const indexOfASIMidFrame = Math.floor(sortedNonGroupedASI.length / 2)
+            const ASIMidFrame = sortedNonGroupedASI[indexOfASIMidFrame]
+        
+            const midFrames = sortedNonGroupedASI.filter(hit => {
+                return hit.includes(ASIMidFrame.replace(/(.png)|(@2x.png)/i, ''))
+            })
+
+            await renameMidFrames(skinDirPath, midFrames)
+        }
+
+        await deleteASIFiles(skinDirPath, sortedNonGroupedASI)
+    }
+
+    return { deletedASIFiles, renamedASIFiles }
 }
 
 module.exports = {
-    getAllASIFiles
+    getAllASIFiles,
+    handleHitStdASIDeletion,
+    handleNonGroupedASIDeletion
 }
