@@ -32,32 +32,104 @@ button {
 }
 
 button {
+    font-family: Torus, sans-serif;
     background-color: #3986AC;
+    color: white;
+    cursor: pointer;
     transition: .1s;
+    padding: 1rem 0.65rem;
+    border-radius: .5rem;
+    border: none;
+    outline: none;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background-color: #66CCFF;
+    }
+
+    &:disabled {
+        background-color: #24536a;
     }
 }
 
-.title {
-    text-shadow: 0 0 4px black;
+svg {
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: -0.350em;
+    margin-left: 1rem;
 }
+
+
 
 .select-dir-cont {
     padding: 1rem;
+    border-radius: .5rem;
+    text-align: center;
+
+    .title {
+        text-shadow: 0 0 4px black;
+    }
+
+    .dir-name-input {
+        padding: .60rem;
+        font-size: 1.1rem;
+        border: 2px solid #3986AC;
+        border-radius: .5rem;
+
+        &:hover,
+        &:focus,
+        &:focus-visible {
+            outline: 2px solid #66CCFF;
+        }
+    }
 }
 
 .error {
     color: red;
 }
 
-.all-asi-files-deleted-list {
-    height: 200px;
-    overflow-y: auto;
+.files-deleted-cont,
+.files-renamed-cont {
+    margin-inline: 1rem;
+    background-color: #24222A;
+
+    .all-asi-files-deleted-list,
+    .all-asi-files-renamed-list {
+        background-color: #302E38;
+        overflow-y: auto;
+    }
+
+    .all-asi-files-deleted-list {
+        height: 125px;
+    }
+
+    .all-asi-files-renamed-list {
+        height: 75px;
+    }
+
+    p {
+        background-color: #221F2E;
+    }
+
+    .asi-files {
+        font-family: Inter sans-serif;
+    }
 }
 
-.all-asi-files-renamed-list {
-    height: 100px;
-    overflow-y: auto;
+
+
+.start-btn-cont {
+    margin-inline: 2rem;
+
+    .start-btn {
+        width: 100%;
+        background-color: #f062a1;
+
+        &:hover:not(:disabled) {
+            background-color: #ff87c6;
+        }
+
+        &:disabled {
+            background-color: #a2436e;
+        }
+    }
 }
