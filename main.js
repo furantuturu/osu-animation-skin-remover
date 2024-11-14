@@ -1,11 +1,11 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('node:path')
-const { getAllASIFiles } = require('./helpers')
+const { getAllASIFiles, handleHitStdASIDeletion, handleNonGroupedASIDeletion } = require('./helpers')
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 550,
-        height: 650,
+        width: 575,
+        height: 700,
         show: false,
         fullscreenable: false,
         webPreferences: {
@@ -45,21 +45,41 @@ async function handleSelectSkinDir() {
 
 ipcMain.handle('selectSkinDir', handleSelectSkinDir)
 
-async function handleSkinDirectoryPathError(event, skinDirPath) {
-    const { errMsg } = await getAllASIFiles(skinDirPath)
-    return errMsg
-}
-
-ipcMain.handle('DirectoryPathError', handleSkinDirectoryPathError)
-
-async function handleASIFileDeletion(skinDirPath) {
-    const { 
+async function handleRetrieveASIFiles(event, skinDirPath) {
+    const {
         hitStdASI,
         playSkipASI,
         scorebarColourASI,
         menuBackASI,
-        followpointASI
+        followpointASI,
+        errMsg
     } = await getAllASIFiles(skinDirPath)
+
+    if (errMsg) return { errMsg }
+
+    const nonGroupedASI = [
+        playSkipASI,
+        scorebarColourASI,
+        menuBackASI,
+        followpointASI
+    ]
+
+    return {
+        hitStdASI,
+        nonGroupedASI
+    }
+}
+
+ipcMain.handle('retrieveASIFiles', handleRetrieveASIFiles)
+
+async function handleASIFileDeletion(event, skinDirPath, hitStdASI, nonGroupedASI) {
+    const { deletedHitASIFiles, renamedHitASIFiles } = await handleHitStdASIDeletion(skinDirPath, hitStdASI)
+    const { deletedASIFiles, renamedASIFiles } = await handleNonGroupedASIDeletion(skinDirPath, nonGroupedASI)
+
+    const allDeletedASIFiles = [...deletedHitASIFiles, ...deletedASIFiles]
+    const allRenamedASIFiles = [...renamedHitASIFiles, ...renamedASIFiles]
+
+    return { allDeletedASIFiles, allRenamedASIFiles }
 }
 
 ipcMain.handle('ASIFileDeletion', handleASIFileDeletion)
