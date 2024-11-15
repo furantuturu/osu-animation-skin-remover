@@ -12,24 +12,23 @@ const naturalSort = createNewSortInstance({
 })
 
 /**
- * Retrieves and categorizes animation skin interface (ASI) files from the specified osu! skin directory.
+ * Retrieves and categorizes animation skin elements (ASE) files from the specified osu! skin directory.
  * 
- * This function scans the given osu! skin directory for ASI files matching specific patterns
- * and categorizes them into predefined arrays. It also counts the total number of ASI 
- * files found and handles any directory errors.
+ * This function scans the given osu! skin directory for ASE files matching specific patterns
+ * and categorizes them into predefined arrays.
  * 
  * @async 
  * @param {string} skinDirPath - The path to the osu! skin directory containing the skin files. 
  * @returns {Array} An array containing: 
- * - **hitStdASI** (Object): An object with arrays for each osu! std hit ASI type (hit0, hit50, hit100, etc.). 
- * - **playSkipASI** (Array): An array of ASI files related to play-skip. 
- * - **scorebarColourASI** (Array): An array of ASI files related to scorebar-colour. 
- * - **menuBackASI** (Array): An array of ASI files related to menu-back. 
- * - **followpointASI** (Array): An array of ASI files related to followpoint. 
+ * - **hitStdASE** (Object): An object with arrays for each osu! std hit ASE type (hit0, hit50, hit100, etc.). 
+ * - **playSkipASE** (Array): An array of ASE files related to play-skip. 
+ * - **scorebarColourASE** (Array): An array of ASE files related to scorebar-colour. 
+ * - **menuBackASE** (Array): An array of ASE files related to menu-back. 
+ * - **followpointASE** (Array): An array of ASE files related to followpoint. 
  * - **errMsg** (String | null): An error message if the directory is not found, otherwise null.
 */
-async function getAllASIFiles(skinDirPath) {
-    const hitStdASI = {
+async function getAllASEFiles(skinDirPath) {
+    const hitStdASE = {
         hit0: [],
         hit50: [],
         hit100: [],
@@ -39,22 +38,22 @@ async function getAllASIFiles(skinDirPath) {
         hit300g: [],
     };
 
-    const playSkipASI = [];
-    const scorebarColourASI = [];
-    const menuBackASI = [];
-    const followpointASI = [];
+    const playSkipASE = [];
+    const scorebarColourASE = [];
+    const menuBackASE = [];
+    const followpointASE = [];
 
     let errMsg = null
     
-    const collectHitStdASIFiles = (file) => {
-        const key = Object.keys(hitStdASI).find(hitStd => hitStd == file.split(/-\d+/)[0])
+    const collectHitStdASEFiles = (file) => {
+        const key = Object.keys(hitStdASE).find(hitStd => hitStd == file.split(/-\d+/)[0])
         if (key) {
-            hitStdASI[key].push(file)
+            hitStdASE[key].push(file)
         }
         
     }
 
-    const collectNonGroupedASIFiles = (file, pattern, collector) => {
+    const collectNonGroupedASEFiles = (file, pattern, collector) => {
         if (file.includes(pattern)) {
             collector.push(file)
         }
@@ -63,22 +62,22 @@ async function getAllASIFiles(skinDirPath) {
     try {
         const skinFiles = await fs.readdir(skinDirPath);
 
-        const hitStdASIPatterns = Object.keys(hitStdASI).map(hit => hit + "-")
+        const hitStdASEPatterns = Object.keys(hitStdASE).map(hit => hit + "-")
 
-        const nonGroupedASIFileCollections = [
-            { pattern: "play-skip", collector: playSkipASI },
-            { pattern: "scorebar-colour", collector: scorebarColourASI },
-            { pattern: "menu-back", collector: menuBackASI },
-            { pattern: "followpoint", collector: followpointASI }
+        const nonGroupedASEFileCollections = [
+            { pattern: "play-skip", collector: playSkipASE },
+            { pattern: "scorebar-colour", collector: scorebarColourASE },
+            { pattern: "menu-back", collector: menuBackASE },
+            { pattern: "followpoint", collector: followpointASE }
         ];
 
         for (const file of skinFiles) {
-            if (file.includes(`${hitStdASIPatterns.find(hitPattern => hitPattern === file.split(/(-\d+)/)[0] + "-")}`)) {
-                collectHitStdASIFiles(file)
+            if (file.includes(`${hitStdASEPatterns.find(hitPattern => hitPattern === file.split(/(-\d+)/)[0] + "-")}`)) {
+                collectHitStdASEFiles(file)
             }
 
-            for (const { pattern, collector } of nonGroupedASIFileCollections) {
-                collectNonGroupedASIFiles(file, pattern, collector);
+            for (const { pattern, collector } of nonGroupedASEFileCollections) {
+                collectNonGroupedASEFiles(file, pattern, collector);
             }
         }
 
@@ -87,23 +86,38 @@ async function getAllASIFiles(skinDirPath) {
     }
 
     return {
-        hitStdASI,
-        playSkipASI,
-        scorebarColourASI,
-        menuBackASI,
-        followpointASI,
+        hitStdASE,
+        playSkipASE,
+        scorebarColourASE,
+        menuBackASE,
+        followpointASE,
         errMsg
     }
 }
 
-async function handleHitStdASIDeletion(skinDirPath, hitStdASI) {
-    const deletedHitASIFiles = []
-    const renamedHitASIFiles = []
+/**
+ * Renames mid-frame files and deletes redundant STD hit animation skin elements (ASE) files.
+ * 
+ * If final frame/image for hit0 is hit0-44, the mid-frame will be hit0-22
+ * 
+ * This function processes STD hit ASE files in the specified osu! skin directory, 
+ * renames the middle frame files to 'hit-0.png' and/or 'hit-0@2x.png', and 
+ * deletes other redundant files.
+ * 
+ * @async 
+ * @param {string} skinDirPath - The path to the osu! skin directory containing the skin files.
+ * @param {object} hitStdASE - An object with arrays of STD hit ASE file names categorized by 'hit' type.
+ * @returns {object} An object containing arrays of deleted and renamed ASE files:
+ * - deletedHitASEFiles (Array): List of deleted hit ASE files.
+ * - renamedHitASEFiles (Array): List of renamed hit ASE files.
+ */
+async function handleHitStdASEDeletion(skinDirPath, hitStdASE) {
+    const deletedHitASEFiles = []
+    const renamedHitASEFiles = []
 
-    //* renaming of mid frame hitSI to hit-0 and/or hit-0@2x
     const renameMidFrames = async (skinDirPath, midFrames) => {
         for (const midFrame of midFrames) {
-            renamedHitASIFiles.push(midFrame)
+            renamedHitASEFiles.push(midFrame)
 
             const newDefaultHitName = midFrame.includes('@2x')
                 ? midFrame.replace(/(-\d+)/, '-0@2x')
@@ -113,56 +127,70 @@ async function handleHitStdASIDeletion(skinDirPath, hitStdASI) {
         }
     }
 
-    //* deletion of osu! STD hit ASI
-    const deleteHitStdASIFiles = async (skinDirPath, sortedHitStdASI) => {
-        for (const hitASI of sortedHitStdASI) {
-            if (hitASI.includes(`-0`) || hitASI.includes(`-0@2x`)) continue
+    const deleteHitStdASEFiles = async (skinDirPath, sortedHitStdASE) => {
+        for (const hitASE of sortedHitStdASE) {
+            if (hitASE.includes(`-0`) || hitASE.includes(`-0@2x`)) continue
 
-            deletedHitASIFiles.push(hitASI)
+            deletedHitASEFiles.push(hitASE)
 
-            await fs.rm(path.join(skinDirPath, hitASI), { force: true })
+            await fs.rm(path.join(skinDirPath, hitASE), { force: true })
         }
     }
 
-    const hitStdASIKeys = Object.keys(hitStdASI)
-    for (const key of hitStdASIKeys) {
-        //* not including hitStdASI that only have at max 4 hitSI
+    const hitStdASEKeys = Object.keys(hitStdASE)
+    for (const key of hitStdASEKeys) {
+        //* not including hitStdASE that only have at max 4 hitSI
         //* possibly only having (e.g hit300-0.png, hit300-0@2x.png, hit300-1.png, hit300-1@2x.png)
-        if (hitStdASI[key].length <= 4) continue
+        if (hitStdASE[key].length <= 4) continue
     
-        const sortedHitStdASI = naturalSort(hitStdASI[key]).asc()
+        const sortedHitStdASE = naturalSort(hitStdASE[key]).asc()
     
         //* returns the middle "hit" frame of the skin, 
-        //* it could be hit - 22.png or hit - 23png for this example
-        //* if hit-44.png is the last frame,
+        //* it could be hit - 22.png or hit - 23.png
+        //* if hit-44.png is the last frame for this example,
         //* assigned middle "hit" frame is possibly 
         //* a @2x upscale variant of hit - 22.png(e.g hit.22@2x.png) or not
-        const indexOfHitASIMidFrame = Math.floor(sortedHitStdASI.length / 2)
-        const hitASIMidFrame = sortedHitStdASI[indexOfHitASIMidFrame]
+        const indexOfHitASEMidFrame = Math.floor(sortedHitStdASE.length / 2)
+        const hitASEMidFrame = sortedHitStdASE[indexOfHitASEMidFrame]
     
-        //* assigns the normal and @2x variant of the middle "hit" frame of the skin
+        //* assigns the normal and/or @2x variant of the middle "hit" frame of the skin
         //* that matches the name of the hitSIMidFrame
-        const midFrames = sortedHitStdASI.filter(hit => {
-            return hit.includes(hitASIMidFrame.replace(/(.png)|(@2x.png)/i, ''))
+        const midFrames = sortedHitStdASE.filter(hit => {
+            return hit.includes(hitASEMidFrame.replace(/(.png)|(@2x.png)/i, ''))
         })
 
         await renameMidFrames(skinDirPath, midFrames)
-        await deleteHitStdASIFiles(skinDirPath, sortedHitStdASI)
+        await deleteHitStdASEFiles(skinDirPath, sortedHitStdASE)
     }
 
-    return { deletedHitASIFiles, renamedHitASIFiles }
+    return { deletedHitASEFiles, renamedHitASEFiles }
 }
 
-async function handleNonGroupedASIDeletion(skinDirPath, nonGroupedASI) {
-    const deletedASIFiles = []
-    const renamedASIFiles = []
+/**
+ * Renames mid-frame files and deletes redundant non-grouped animation skin element (ASE) files.
+ * 
+ * Renaming can only happen if a skin element type dont have a static
+ * or complete image after the animation, e.g play-skip.png
+ * 
+ * This function processes non-grouped ASE files in the specified osu! skin directory,
+ * renames the mid-frame files to a standard format, and deletes other redundant files.
+ * 
+ * @async * 
+ * @param {string} skinDirPath - The path to the directory containing the ASE files.
+ * @param {array} nonGroupedASEs - An array of non-grouped ASE file names categorized by type.
+ * @returns {object} An object containing arrays of deleted and renamed ASE files:
+ * - deletedASEFiles (Array): List of deleted ASE files. * 
+ * - renamedASEFiles (Array): List of renamed ASE files. */
+async function handleNonGroupedASEDeletion(skinDirPath, nonGroupedASEs) {
+    const deletedASEFiles = []
+    const renamedASEFiles = []
 
     //* renaming of mid frame
     //* (e.g.play-skip-25 to play - skip.png and/or play - skip@2x.png
     //* if total play-skip frames is 50 (play-skip-50) and no default play-skip.png which is being checked)
     const renameMidFrames = async (skinDirPath, midFrames) => {
         for (const midFrame of midFrames) {
-            renamedASIFiles.push(midFrame)
+            renamedASEFiles.push(midFrame)
 
             const newDefaultName = midFrame.replace(/(-\d+)/, '')
             
@@ -170,45 +198,45 @@ async function handleNonGroupedASIDeletion(skinDirPath, nonGroupedASI) {
         }
     }
 
-    const deleteASIFiles = async (skinDirPath, sortedNonGroupedASI) => {
-        for (const asi of sortedNonGroupedASI) {
-            if (!asi.match(/(-\d+)/)) continue
+    const deleteASEFiles = async (skinDirPath, sortedNonGroupedASEs) => {
+        for (const ASEFile of sortedNonGroupedASEs) {
+            if (!ASEFile.match(/(-\d+)/)) continue
 
-            deletedASIFiles.push(asi)
+            deletedASEFiles.push(ASEFile)
             
-            await fs.rm(path.join(skinDirPath, asi), { force: true })
+            await fs.rm(path.join(skinDirPath, ASEFile), { force: true })
         }
     }
 
-    for (const asi of nonGroupedASI) {
-        if (asi.length <= 4) continue
+    for (const ASE of nonGroupedASEs) {
+        if (ASE.length <= 4) continue
         
-        const sortedNonGroupedASI = naturalSort(asi).asc()
+        const sortedNonGroupedASEs = naturalSort(ASE).asc()
 
-        //* checks if theres no default static normal and/or @2x upscale SI
+        //* checks if theres no static normal and/or @2x upscale SE
         //* (e.g play-skip.png or play-skip@2x.png)
-        //* if theres none then get mid frame of the certain SI
-        //* and make it as a default static SI
+        //* if theres none, then get mid frame of the certain SE
+        //* and make it as a static SE
         //* else proceed directly to deletion
-        if (sortedNonGroupedASI.at(-2)?.match(/(-\d+)/) !== null || sortedNonGroupedASI.at(-1)?.match(/(-\d+)/) ) {
-            const indexOfASIMidFrame = Math.floor(sortedNonGroupedASI.length / 2)
-            const ASIMidFrame = sortedNonGroupedASI[indexOfASIMidFrame]
+        if (sortedNonGroupedASEs.at(-2)?.match(/(-\d+)/) !== null || sortedNonGroupedASEs.at(-1)?.match(/(-\d+)/) ) {
+            const indexOfASEMidFrame = Math.floor(sortedNonGroupedASEs.length / 2)
+            const ASEMidFrame = sortedNonGroupedASEs[indexOfASEMidFrame]
         
-            const midFrames = sortedNonGroupedASI.filter(hit => {
-                return hit.includes(ASIMidFrame.replace(/(.png)|(@2x.png)/i, ''))
+            const midFrames = sortedNonGroupedASEs.filter(hit => {
+                return hit.includes(ASEMidFrame.replace(/(.png)|(@2x.png)/i, ''))
             })
 
             await renameMidFrames(skinDirPath, midFrames)
         }
 
-        await deleteASIFiles(skinDirPath, sortedNonGroupedASI)
+        await deleteASEFiles(skinDirPath, sortedNonGroupedASEs)
     }
 
-    return { deletedASIFiles, renamedASIFiles }
+    return { deletedASEFiles, renamedASEFiles }
 }
 
 module.exports = {
-    getAllASIFiles,
-    handleHitStdASIDeletion,
-    handleNonGroupedASIDeletion
+    getAllASEFiles,
+    handleHitStdASEDeletion,
+    handleNonGroupedASEDeletion
 }
