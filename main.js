@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('node:path')
-const { getAllASIFiles, handleHitStdASIDeletion, handleNonGroupedASIDeletion } = require('./helpers')
+const { getAllASEFiles, handleHitStdASEDeletion, handleNonGroupedASEDeletion } = require('./helpers')
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
@@ -8,12 +8,13 @@ function createWindow() {
         height: 700,
         show: false,
         fullscreenable: false,
+        resizable: false,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             devTools: false
         }
     })
-    
+
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()
     })
@@ -45,41 +46,41 @@ async function handleSelectSkinDir() {
 
 ipcMain.handle('selectSkinDir', handleSelectSkinDir)
 
-async function handleRetrieveASIFiles(event, skinDirPath) {
+async function handleRetrieveASEFiles(event, skinDirPath) {
     const {
-        hitStdASI,
-        playSkipASI,
-        scorebarColourASI,
-        menuBackASI,
-        followpointASI,
+        hitStdASE,
+        playSkipASE,
+        scorebarColourASE,
+        menuBackASE,
+        followpointASE,
         errMsg
-    } = await getAllASIFiles(skinDirPath)
+    } = await getAllASEFiles(skinDirPath)
 
     if (errMsg) return { errMsg }
 
-    const nonGroupedASI = [
-        playSkipASI,
-        scorebarColourASI,
-        menuBackASI,
-        followpointASI
+    const nonGroupedASE = [
+        playSkipASE,
+        scorebarColourASE,
+        menuBackASE,
+        followpointASE
     ]
 
     return {
-        hitStdASI,
-        nonGroupedASI
+        hitStdASE,
+        nonGroupedASE
     }
 }
 
-ipcMain.handle('retrieveASIFiles', handleRetrieveASIFiles)
+ipcMain.handle('retrieveASEFiles', handleRetrieveASEFiles)
 
-async function handleASIFileDeletion(event, skinDirPath, hitStdASI, nonGroupedASI) {
-    const { deletedHitASIFiles, renamedHitASIFiles } = await handleHitStdASIDeletion(skinDirPath, hitStdASI)
-    const { deletedASIFiles, renamedASIFiles } = await handleNonGroupedASIDeletion(skinDirPath, nonGroupedASI)
+async function handleASEFileDeletion(event, skinDirPath, hitStdASE, nonGroupedASE) {
+    const { deletedHitASEFiles, renamedHitASEFiles } = await handleHitStdASEDeletion(skinDirPath, hitStdASE)
+    const { deletedASEFiles, renamedASEFiles } = await handleNonGroupedASEDeletion(skinDirPath, nonGroupedASE)
 
-    const allDeletedASIFiles = [...deletedHitASIFiles, ...deletedASIFiles]
-    const allRenamedASIFiles = [...renamedHitASIFiles, ...renamedASIFiles]
+    const allDeletedASEFiles = [...deletedHitASEFiles, ...deletedASEFiles]
+    const allRenamedASEFiles = [...renamedHitASEFiles, ...renamedASEFiles]
 
-    return { allDeletedASIFiles, allRenamedASIFiles }
+    return { allDeletedASEFiles, allRenamedASEFiles }
 }
 
-ipcMain.handle('ASIFileDeletion', handleASIFileDeletion)
+ipcMain.handle('ASEFileDeletion', handleASEFileDeletion)
