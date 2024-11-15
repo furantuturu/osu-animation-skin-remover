@@ -22,11 +22,17 @@ body {
     color: white;
 }
 
-h1 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: Torus, sans-serif;
 }
 
 p,
+span,
 button {
     font-family: Inter, sans-serif;
 }
@@ -48,6 +54,7 @@ button {
 
     &:disabled {
         background-color: #24536a;
+        cursor: default;
     }
 }
 
@@ -58,7 +65,9 @@ svg {
     margin-left: 1rem;
 }
 
-
+ul {
+    margin: 0;
+}
 
 .select-dir-cont {
     padding: 1rem;
@@ -67,6 +76,11 @@ svg {
 
     .title {
         text-shadow: 0 0 4px black;
+        margin-block: .55rem;
+    }
+
+    .excla {
+        font-family: Inter, sans-serif;
     }
 
     .dir-name-input {
@@ -85,37 +99,72 @@ svg {
 
 .error {
     color: red;
+    margin-inline-start: 1rem;
 }
 
 .files-deleted-cont,
 .files-renamed-cont {
     margin-inline: 1rem;
+    margin-block-end: 1.35rem;
     background-color: #24222A;
 
-    .all-asi-files-deleted-list,
-    .all-asi-files-renamed-list {
+    .all-ASE-files-deleted-list,
+    .all-ASE-files-renamed-list {
         background-color: #302E38;
         overflow-y: auto;
     }
 
-    .all-asi-files-deleted-list {
+    .all-ASE-files-deleted-list {
         height: 125px;
     }
 
-    .all-asi-files-renamed-list {
-        height: 75px;
+    .all-ASE-files-renamed-list {
+        height: 100px;
     }
 
-    p {
-        background-color: #221F2E;
+    h3 {
+        padding: 1rem;
+        margin: 0;
     }
 
-    .asi-files {
-        font-family: Inter sans-serif;
+    .rename-count,
+    .delete-count,
+    .ASE-files {
+        font-family: Inter, sans-serif;
     }
 }
 
 
+.rename-tooltip {
+    position: relative;
+    transition: .1s;
+    cursor: pointer;
+
+    .rename-tooltip-info {
+        width: 1em;
+        height: 1em;
+        vertical-align: -0.150em;
+        margin: 0;
+    }
+
+    .rename-tooltip-text {
+        font-size: .8rem;
+        background-color: #18171C;
+        border-radius: .5rem;
+        visibility: hidden;
+        position: absolute;
+        top: -140px;
+        transform: translateX(50%);
+        padding: 1rem;
+
+    }
+
+    &:hover {
+        .rename-tooltip-text {
+            visibility: visible;
+        }
+    }
+}
 
 .start-btn-cont {
     margin-inline: 2rem;
