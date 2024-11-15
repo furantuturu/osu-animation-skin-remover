@@ -18,7 +18,7 @@
 </head>
 <body>
     <div class="select-dir-cont">
-        <h1 class="title">osu! Animation Skin Remover</h1>
+        <h1 class="title">osu<b class="excla">!</b> Animation Skin Remover</h1>
         <input type="text" class="dir-name-input" placeholder="Select an osu! Skin folder">
         <button type="button" class="select-dir-btn">
             Select
@@ -31,17 +31,33 @@
     </div>
     <p class="error"></p>
     <div class="files-deleted-cont">
-        <p>Files that were deleted: <strong class="delete-count"></strong></p>
-        <ul class="all-asi-files-deleted-list"></ul>
+        <h3>Files that were deleted: <strong class="delete-count"></strong></h3>
+        <ul class="all-ASE-files-deleted-list"></ul>
     </div>
     <div class="files-renamed-cont">
-        <p>Files that were renamed: <strong class="rename-count"></strong>
-            <br>
-            <i>(e.g. hit0-22.png to hit0-0.png and/or hit0-22@2x.png to hit0-0@2x.png)</i>
-            <br>
-            <i>(e.g. play-skip-50.png to play-skip.png and/or play-skip-50@2x.png to play-skip@2x.png)</i>
-        </p>
-        <ul class="all-asi-files-renamed-list"></ul>
+        <h3>
+            Files that were renamed:
+            <span class="rename-tooltip">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="rename-tooltip-info">
+                    <path 
+                    fill="#ffffff"
+                    d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/>
+                </svg>
+                <p class="rename-tooltip-text">
+                    Files gonna be renamed as:
+                    <br>
+                    <i>
+                        (e.g. hit0-22.png to hit0-0.png)
+                        <br>
+                        (e.g. play-skip-50.png to play-skip.png)
+                    </i>
+                    <br>
+                    same for their @2x(HD) variant(if exist)
+                </p>
+            </span>
+            <strong class="rename-count"></strong>
+        </h3>
+        <ul class="all-ASE-files-renamed-list"></ul>
     </div>
     <div class="start-btn-cont">
         <button type="button" class="start-btn">
